@@ -1,0 +1,39 @@
+# XcodeGen spec — generates PGPonyLinkDemo.xcodeproj.
+#   brew install xcodegen   (one-time)
+#   cd examples/PGPonyLinkDemo && xcodegen generate && open PGPonyLinkDemo.xcodeproj
+#
+# Then set your signing team (Signing & Capabilities → Team) and run on a device.
+name: PGPonyLinkDemo
+options:
+  bundleIdPrefix: app.pgpony.demo
+  deploymentTarget:
+    iOS: "17.0"
+packages:
+  PGPonyCore:
+    # Repo root (two levels up) holds Package.swift.
+    path: ../..
+targets:
+  PGPonyLinkDemo:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources
+    dependencies:
+      - package: PGPonyCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.pgpony.demo.link
+        # Lets the app `@testable import PGPonyCore` while the core is still
+        # `internal` (Debug only). Remove once PGPonyCore exposes a `public` API.
+        ENABLE_TESTABILITY: true
+        CODE_SIGN_ENTITLEMENTS: Support/PGPonyLinkDemo.entitlements
+        # Fill DEVELOPMENT_TEAM here, or set the Team in Xcode's signing UI.
+        CODE_SIGN_STYLE: Automatic
+    info:
+      path: Support/Info.plist
+      properties:
+        NFCReaderUsageDescription: "Reads your OpenPGP hardware key to decrypt a test message."
+        # Required for ISO7816 NFCTagReaderSession — the OpenPGP applet AID prefix.
+        com.apple.developer.nfc.readersession.iso7816.select-identifiers:
+          - D27600012401
+        UILaunchScreen: {}

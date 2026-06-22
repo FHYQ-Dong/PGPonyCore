@@ -24,10 +24,13 @@ jobs:
       # simulator-naming mismatch can't mask a genuine build failure.
       - name: Test on iOS Simulator
         run: |
-          set -o pipefail
+          # No `set -o pipefail`: the runner shell is `bash -e`, and pipefail plus an
+          # early-closing pipe (grep -m1 / head) would let an upstream SIGPIPE fail the
+          # whole command-substitution and kill the step even when a UDID was found.
           UDID=$(xcrun simctl list devices available \
-                 | grep -m1 'iPhone' \
-                 | grep -Eo '[0-9A-Fa-f-]{36}')
+                 | grep 'iPhone' \
+                 | grep -Eo '[0-9A-Fa-f-]{36}' \
+                 | head -n1)
           if [ -z "$UDID" ]; then
             echo "::error::No iPhone simulator available on this runner"; exit 1
           fi
